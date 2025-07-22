@@ -34,11 +34,24 @@
 #' @export
 install_suggested_packages <- function(libname = NULL, pkgname = NULL) {
   suggested_pkgs <- c(
-    "cli", "countrycode", "crayon", "scales", "glue", "gstat",
-    "haven", "here", "matrixStats", "rstudioapi", "geodata",
-    "pbmcapply", "remotes", "future", "future.apply",
-    "testthat", "rdhs", "openxlsx2", "purrr", "rlang", "pak",
-    "sp", "automap", "knitr", "rmarkdown", "mockery"
+    "sp",
+    "tibble",
+    "rstudioapi",
+    "graphics",
+    "methods",
+    "future",
+    "future.apply",
+    "pbmcapply",
+    "knitr",
+    "httr",
+    "scales",
+    "rmarkdown",
+    "exactextractr",
+    "pdist",
+    "numDeriv",
+    "openxlsx2",
+    "matrixStats",
+    "testthat"
   )
 
   missing_pkgs <- suggested_pkgs[!sapply(
@@ -220,6 +233,17 @@ init <- function(r_script_name = "full_pipeline.R",
                  path = here::here(),
                  open_r_script = TRUE,
                  setup_rscript = TRUE) {
+
+    # Check for required package
+    if (!requireNamespace("pbmcapply", quietly = TRUE)) {
+      stop(
+        paste0(
+          "Package 'rstudioapi' is required for this function ",
+          "Please install it with install.packages('rstudioapi')"
+        )
+      )
+    }
+
   # ensure sugegsted packages are installed
   AgePopDenom::install_suggested_packages()
 
@@ -239,7 +263,7 @@ init <- function(r_script_name = "full_pipeline.R",
   r_script_content <- if (setup_rscript) {
     '
 # set up country of interest
-cntry_codes = c("GMB", "COM")
+cntry_codes = c("GMB")
 
 # Gather and process datasets --------------------------------------------------
 
@@ -394,4 +418,45 @@ writeLines(cpp_script_content, cpp_script_path)
 cli::cli_alert_success(
   "C++ script '{cpp_script_path}' successfully created."
 )
+}
+
+
+#' Get the path to the currently running script
+#'
+#' This function attempts to determine the file path of the currently executing
+#' R script. It works across multiple contexts:
+#' - In RStudio: returns the path of the active source editor tab.
+#' - In Rscript: extracts the `--file` argument used in script execution.
+#' - When sourced: uses the internal `ofile` value.
+#'
+#' @return A character string with the full path to the current script,
+#'         or `NULL` if it cannot be determined.
+#'
+#' @examples
+#' get_current_script_path()
+#'
+#' @export
+get_current_script_path <- function() {
+  # 1. try RStudio editor path
+  if (
+    requireNamespace("rstudioapi", quietly = TRUE) &&
+      rstudioapi::isAvailable()
+  ) {
+    path <- rstudioapi::getSourceEditorContext()$path
+    if (nzchar(path)) return(normalizePath(path))
+  }
+
+  # 2. try Rscript --file
+  args <- commandArgs(trailingOnly = FALSE)
+  path_arg <- grep("^--file=", args, value = TRUE)
+  if (length(path_arg)) {
+    return(normalizePath(sub("^--file=", "", path_arg)))
+  }
+
+  # 3. try source() path
+  if (!is.null(sys.frames()[[1]]$ofile)) {
+    return(normalizePath(sys.frames()[[1]]$ofile))
+  }
+
+  NULL
 }

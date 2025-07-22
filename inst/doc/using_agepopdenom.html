@@ -48,8 +48,9 @@ overflow: visible;
 }
 </style>
 <style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
 pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
 pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
 code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -60,7 +61,7 @@ div.sourceCode { overflow: auto; }
 }
 @media print {
 pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
 pre.numberSource code
 { counter-reset: source-line 0; }
@@ -426,8 +427,9 @@ typical usage pipeline.</p>
 <h2>1. Initialize a Project</h2>
 <p>Before starting, ensure you have an <strong>RStudio project</strong>
 set up. This will help organize your analysis and outputs into a single,
-self-contained directory. An RStudio project is essential for
-maintaining reproducibility and keeping your workflow organized.</p>
+self-contained directory. <strong>Working from an RStudio project is
+essential</strong> for maintaining reproducibility and keeping your
+workflow organized.</p>
 <p>Once the RStudio project is created, initialize the project folder
 structure and create the key scripts by running:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">init</span>(</span>
@@ -869,72 +871,76 @@ workflow using simulated DHS-like data for Gambia. This enables users to
 replicate fine-scale age-structured population modeling locally without
 requiring restricted data access. The example covers directory setup,
 dummy data simulation, and running the full modeling workflow.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="fu">init</span>(</span>
-<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a>  <span class="at">r_script_name =</span> <span class="st">&quot;full_pipeline.R&quot;</span>,</span>
-<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a>  <span class="at">cpp_script_name =</span> <span class="st">&quot;model.cpp&quot;</span>,</span>
-<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a>  <span class="at">open_r_script =</span> <span class="cn">FALSE</span></span>
-<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a>)</span>
-<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a></span>
-<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a><span class="co"># set up country code</span></span>
-<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a>cntry_code <span class="ot">=</span> <span class="st">&quot;GMB&quot;</span></span>
-<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a></span>
-<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a><span class="co"># Gather and process datasets ---------------------------------------</span></span>
-<span id="cb25-11"><a href="#cb25-11" tabindex="-1"></a></span>
-<span id="cb25-12"><a href="#cb25-12" tabindex="-1"></a><span class="co"># Set parameters for simulation</span></span>
-<span id="cb25-13"><a href="#cb25-13" tabindex="-1"></a>total_population <span class="ot">&lt;-</span> <span class="dv">266</span></span>
-<span id="cb25-14"><a href="#cb25-14" tabindex="-1"></a>urban_proportion <span class="ot">&lt;-</span> <span class="fl">0.602</span></span>
-<span id="cb25-15"><a href="#cb25-15" tabindex="-1"></a>total_coords <span class="ot">&lt;-</span> <span class="dv">266</span></span>
-<span id="cb25-16"><a href="#cb25-16" tabindex="-1"></a>lon_range <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="sc">-</span><span class="fl">16.802</span>, <span class="sc">-</span><span class="fl">13.849</span>)</span>
-<span id="cb25-17"><a href="#cb25-17" tabindex="-1"></a>lat_range <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">13.149</span>, <span class="fl">13.801</span>)</span>
-<span id="cb25-18"><a href="#cb25-18" tabindex="-1"></a>mean_web_x <span class="ot">&lt;-</span> <span class="sc">-</span><span class="dv">1764351</span></span>
-<span id="cb25-19"><a href="#cb25-19" tabindex="-1"></a>mean_web_y <span class="ot">&lt;-</span> <span class="dv">1510868</span></span>
-<span id="cb25-20"><a href="#cb25-20" tabindex="-1"></a></span>
-<span id="cb25-21"><a href="#cb25-21" tabindex="-1"></a><span class="co"># Simulate processed survey dataset for Gambia</span></span>
-<span id="cb25-22"><a href="#cb25-22" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">123</span>)</span>
-<span id="cb25-23"><a href="#cb25-23" tabindex="-1"></a>df_gambia <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
-<span id="cb25-24"><a href="#cb25-24" tabindex="-1"></a>df_gambia<span class="sc">$</span>age_param_data <span class="ot">&lt;-</span> dplyr<span class="sc">::</span><span class="fu">tibble</span>(</span>
-<span id="cb25-25"><a href="#cb25-25" tabindex="-1"></a>  <span class="at">country =</span> <span class="st">&quot;Gambia&quot;</span>,</span>
-<span id="cb25-26"><a href="#cb25-26" tabindex="-1"></a>  <span class="at">country_code_iso3 =</span> <span class="st">&quot;GMB&quot;</span>,</span>
-<span id="cb25-27"><a href="#cb25-27" tabindex="-1"></a>  <span class="at">country_code_dhs =</span> <span class="st">&quot;GM&quot;</span>, </span>
-<span id="cb25-28"><a href="#cb25-28" tabindex="-1"></a>  <span class="at">year_of_survey =</span> <span class="dv">2024</span>,</span>
-<span id="cb25-29"><a href="#cb25-29" tabindex="-1"></a>  <span class="at">id_coords =</span> <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span>total_coords, <span class="at">length.out =</span> total_population),</span>
-<span id="cb25-30"><a href="#cb25-30" tabindex="-1"></a>  <span class="at">lon =</span> <span class="fu">runif</span>(total_population, lon_range[<span class="dv">1</span>], lon_range[<span class="dv">2</span>]),</span>
-<span id="cb25-31"><a href="#cb25-31" tabindex="-1"></a>  <span class="at">lat =</span> <span class="fu">runif</span>(total_population, lat_range[<span class="dv">1</span>], lat_range[<span class="dv">2</span>]), </span>
-<span id="cb25-32"><a href="#cb25-32" tabindex="-1"></a>  <span class="at">web_x =</span> <span class="fu">rnorm</span>(total_population, mean_web_x, <span class="dv">50000</span>),</span>
-<span id="cb25-33"><a href="#cb25-33" tabindex="-1"></a>  <span class="at">web_y =</span> <span class="fu">rnorm</span>(total_population, mean_web_y, <span class="dv">50000</span>),</span>
-<span id="cb25-34"><a href="#cb25-34" tabindex="-1"></a>  <span class="at">log_scale =</span> <span class="fu">rnorm</span>(total_population, <span class="fl">2.82</span>, <span class="fl">0.2</span>),</span>
-<span id="cb25-35"><a href="#cb25-35" tabindex="-1"></a>  <span class="at">log_shape =</span> <span class="fu">rnorm</span>(total_population, <span class="fl">0.331</span>, <span class="fl">0.1</span>),</span>
-<span id="cb25-36"><a href="#cb25-36" tabindex="-1"></a>  <span class="at">urban =</span> <span class="fu">rep</span>(<span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">0</span>), <span class="fu">c</span>(</span>
-<span id="cb25-37"><a href="#cb25-37" tabindex="-1"></a>    <span class="fu">round</span>(total_population <span class="sc">*</span> urban_proportion), </span>
-<span id="cb25-38"><a href="#cb25-38" tabindex="-1"></a>    total_population <span class="sc">-</span> <span class="fu">round</span>(total_population <span class="sc">*</span> urban_proportion))),</span>
-<span id="cb25-39"><a href="#cb25-39" tabindex="-1"></a>  <span class="at">b1 =</span> <span class="fu">rnorm</span>(total_population, <span class="fl">0.0142</span>, <span class="fl">0.002</span>),</span>
-<span id="cb25-40"><a href="#cb25-40" tabindex="-1"></a>  <span class="at">c =</span> <span class="fu">rnorm</span>(total_population, <span class="sc">-</span><span class="fl">0.00997</span>, <span class="fl">0.001</span>),</span>
-<span id="cb25-41"><a href="#cb25-41" tabindex="-1"></a>  <span class="at">b2 =</span> <span class="fu">rnorm</span>(total_population, <span class="fl">0.00997</span>, <span class="fl">0.002</span>),</span>
-<span id="cb25-42"><a href="#cb25-42" tabindex="-1"></a>  <span class="at">nsampled =</span> <span class="fu">sample</span>(<span class="dv">180</span><span class="sc">:</span><span class="dv">220</span>, total_population, <span class="at">replace =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb25-43"><a href="#cb25-43" tabindex="-1"></a></span>
-<span id="cb25-44"><a href="#cb25-44" tabindex="-1"></a><span class="co"># save as processed dhs data</span></span>
-<span id="cb25-45"><a href="#cb25-45" tabindex="-1"></a><span class="fu">saveRDS</span>(</span>
-<span id="cb25-46"><a href="#cb25-46" tabindex="-1"></a>  df_gambia,</span>
-<span id="cb25-47"><a href="#cb25-47" tabindex="-1"></a>  <span class="at">file =</span> here<span class="sc">::</span><span class="fu">here</span>(</span>
-<span id="cb25-48"><a href="#cb25-48" tabindex="-1"></a>    <span class="st">&quot;01_data&quot;</span>, <span class="st">&quot;1a_survey_data&quot;</span>, <span class="st">&quot;processed&quot;</span>, </span>
-<span id="cb25-49"><a href="#cb25-49" tabindex="-1"></a>    <span class="st">&quot;dhs_pr_records_combined.rds&quot;</span>))</span>
-<span id="cb25-50"><a href="#cb25-50" tabindex="-1"></a></span>
-<span id="cb25-51"><a href="#cb25-51" tabindex="-1"></a><span class="co"># Download shapefiles</span></span>
-<span id="cb25-52"><a href="#cb25-52" tabindex="-1"></a><span class="fu">download_shapefile</span>(cntry_code)</span>
-<span id="cb25-53"><a href="#cb25-53" tabindex="-1"></a></span>
-<span id="cb25-54"><a href="#cb25-54" tabindex="-1"></a><span class="co"># Download population rasters from worldpop</span></span>
-<span id="cb25-55"><a href="#cb25-55" tabindex="-1"></a><span class="fu">download_pop_rasters</span>(cntry_code)</span>
-<span id="cb25-56"><a href="#cb25-56" tabindex="-1"></a></span>
-<span id="cb25-57"><a href="#cb25-57" tabindex="-1"></a><span class="co"># Extract urban extent raster</span></span>
-<span id="cb25-58"><a href="#cb25-58" tabindex="-1"></a><span class="fu">extract_afurextent</span>()</span>
-<span id="cb25-59"><a href="#cb25-59" tabindex="-1"></a></span>
-<span id="cb25-60"><a href="#cb25-60" tabindex="-1"></a><span class="co"># Run models and get outputs ------------------------------------------</span></span>
-<span id="cb25-61"><a href="#cb25-61" tabindex="-1"></a></span>
-<span id="cb25-62"><a href="#cb25-62" tabindex="-1"></a><span class="co"># Run the full model workflow</span></span>
-<span id="cb25-63"><a href="#cb25-63" tabindex="-1"></a><span class="fu">run_full_workflow</span>(cntry_code)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="co"># Get Package ------------------------------------------------------------------</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="co"># install package</span></span>
+<span id="cb25-4"><a href="#cb25-4" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;AgePopDenom&quot;</span>)</span>
+<span id="cb25-5"><a href="#cb25-5" tabindex="-1"></a></span>
+<span id="cb25-6"><a href="#cb25-6" tabindex="-1"></a><span class="co"># Working directory ------------------------------------------------------------</span></span>
+<span id="cb25-7"><a href="#cb25-7" tabindex="-1"></a></span>
+<span id="cb25-8"><a href="#cb25-8" tabindex="-1"></a><span class="co"># set working directory based on script location if not using an R project</span></span>
+<span id="cb25-9"><a href="#cb25-9" tabindex="-1"></a><span class="co"># this ensures relative paths work as expected outside .Rproj environments</span></span>
+<span id="cb25-10"><a href="#cb25-10" tabindex="-1"></a></span>
+<span id="cb25-11"><a href="#cb25-11" tabindex="-1"></a><span class="co"># get script path</span></span>
+<span id="cb25-12"><a href="#cb25-12" tabindex="-1"></a>current_file_path <span class="ot">&lt;-</span> AgePopDenom<span class="sc">::</span><span class="fu">get_current_script_path</span>()</span>
+<span id="cb25-13"><a href="#cb25-13" tabindex="-1"></a>script_dir <span class="ot">&lt;-</span> <span class="fu">dirname</span>(current_file_path)</span>
+<span id="cb25-14"><a href="#cb25-14" tabindex="-1"></a></span>
+<span id="cb25-15"><a href="#cb25-15" tabindex="-1"></a><span class="co"># set working directory to script directory if not already in a project</span></span>
+<span id="cb25-16"><a href="#cb25-16" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">any</span>(<span class="fu">grepl</span>(<span class="st">&quot;</span><span class="sc">\\</span><span class="st">.Rproj$&quot;</span>, <span class="fu">list.files</span>(script_dir)))) {</span>
+<span id="cb25-17"><a href="#cb25-17" tabindex="-1"></a>  <span class="fu">setwd</span>(script_dir)</span>
+<span id="cb25-18"><a href="#cb25-18" tabindex="-1"></a>  <span class="fu">message</span>(</span>
+<span id="cb25-19"><a href="#cb25-19" tabindex="-1"></a>    <span class="st">&quot;no .Rproj file found. using script directory as working directory: &quot;</span>,</span>
+<span id="cb25-20"><a href="#cb25-20" tabindex="-1"></a>    script_dir</span>
+<span id="cb25-21"><a href="#cb25-21" tabindex="-1"></a>  )</span>
+<span id="cb25-22"><a href="#cb25-22" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb25-23"><a href="#cb25-23" tabindex="-1"></a>  <span class="fu">message</span>(<span class="st">&quot;.Rproj file detected. assuming project is correctly set up.&quot;</span>)</span>
+<span id="cb25-24"><a href="#cb25-24" tabindex="-1"></a>}</span>
+<span id="cb25-25"><a href="#cb25-25" tabindex="-1"></a></span>
+<span id="cb25-26"><a href="#cb25-26" tabindex="-1"></a><span class="co"># Create directory and file Structure ------------------------------------------</span></span>
+<span id="cb25-27"><a href="#cb25-27" tabindex="-1"></a></span>
+<span id="cb25-28"><a href="#cb25-28" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">init</span>(</span>
+<span id="cb25-29"><a href="#cb25-29" tabindex="-1"></a>  <span class="at">r_script_name =</span> <span class="st">&quot;full_pipeline.R&quot;</span>,</span>
+<span id="cb25-30"><a href="#cb25-30" tabindex="-1"></a>  <span class="at">cpp_script_name =</span> <span class="st">&quot;model.cpp&quot;</span>,</span>
+<span id="cb25-31"><a href="#cb25-31" tabindex="-1"></a>  <span class="at">open_r_script =</span> <span class="cn">FALSE</span></span>
+<span id="cb25-32"><a href="#cb25-32" tabindex="-1"></a>)</span>
+<span id="cb25-33"><a href="#cb25-33" tabindex="-1"></a></span>
+<span id="cb25-34"><a href="#cb25-34" tabindex="-1"></a><span class="co"># Gather and process datasets --------------------------------------------------</span></span>
+<span id="cb25-35"><a href="#cb25-35" tabindex="-1"></a></span>
+<span id="cb25-36"><a href="#cb25-36" tabindex="-1"></a><span class="co"># set up country code</span></span>
+<span id="cb25-37"><a href="#cb25-37" tabindex="-1"></a>cntry_code <span class="ot">=</span> <span class="st">&quot;GMB&quot;</span></span>
+<span id="cb25-38"><a href="#cb25-38" tabindex="-1"></a>country <span class="ot">=</span> <span class="st">&quot;Gambia&quot;</span></span>
+<span id="cb25-39"><a href="#cb25-39" tabindex="-1"></a>country_code_dhs <span class="ot">=</span> <span class="st">&quot;GM&quot;</span></span>
+<span id="cb25-40"><a href="#cb25-40" tabindex="-1"></a></span>
+<span id="cb25-41"><a href="#cb25-41" tabindex="-1"></a><span class="co"># Simulate and save processed survey dataset for Gambia</span></span>
+<span id="cb25-42"><a href="#cb25-42" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">simulate_dummy_dhs_pr</span>(</span>
+<span id="cb25-43"><a href="#cb25-43" tabindex="-1"></a>  <span class="at">country =</span> country,</span>
+<span id="cb25-44"><a href="#cb25-44" tabindex="-1"></a>  <span class="at">country_code_iso3 =</span> cntry_code,</span>
+<span id="cb25-45"><a href="#cb25-45" tabindex="-1"></a>  <span class="at">country_code_dhs =</span> country_code_dhs,</span>
+<span id="cb25-46"><a href="#cb25-46" tabindex="-1"></a>  <span class="at">year_of_survey =</span> <span class="dv">2024</span>,</span>
+<span id="cb25-47"><a href="#cb25-47" tabindex="-1"></a>  <span class="at">output_path =</span> here<span class="sc">::</span><span class="fu">here</span>(</span>
+<span id="cb25-48"><a href="#cb25-48" tabindex="-1"></a>    <span class="st">&quot;01_data&quot;</span>,</span>
+<span id="cb25-49"><a href="#cb25-49" tabindex="-1"></a>    <span class="st">&quot;1a_survey_data&quot;</span>,</span>
+<span id="cb25-50"><a href="#cb25-50" tabindex="-1"></a>    <span class="st">&quot;processed&quot;</span>,</span>
+<span id="cb25-51"><a href="#cb25-51" tabindex="-1"></a>    <span class="st">&quot;dhs_pr_records_combined.rds&quot;</span></span>
+<span id="cb25-52"><a href="#cb25-52" tabindex="-1"></a>  )</span>
+<span id="cb25-53"><a href="#cb25-53" tabindex="-1"></a>)</span>
+<span id="cb25-54"><a href="#cb25-54" tabindex="-1"></a></span>
+<span id="cb25-55"><a href="#cb25-55" tabindex="-1"></a><span class="co"># download shapefiles</span></span>
+<span id="cb25-56"><a href="#cb25-56" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">download_shapefile</span>(cntry_code)</span>
+<span id="cb25-57"><a href="#cb25-57" tabindex="-1"></a></span>
+<span id="cb25-58"><a href="#cb25-58" tabindex="-1"></a><span class="co"># download population rasters from worldpop</span></span>
+<span id="cb25-59"><a href="#cb25-59" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">download_pop_rasters</span>(cntry_code)</span>
+<span id="cb25-60"><a href="#cb25-60" tabindex="-1"></a></span>
+<span id="cb25-61"><a href="#cb25-61" tabindex="-1"></a><span class="co"># wxtract urban extent raster</span></span>
+<span id="cb25-62"><a href="#cb25-62" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">extract_afurextent</span>()</span>
+<span id="cb25-63"><a href="#cb25-63" tabindex="-1"></a></span>
+<span id="cb25-64"><a href="#cb25-64" tabindex="-1"></a><span class="co"># Run models and get outputs ---------------------------------------------------</span></span>
+<span id="cb25-65"><a href="#cb25-65" tabindex="-1"></a></span>
+<span id="cb25-66"><a href="#cb25-66" tabindex="-1"></a><span class="co"># run the full model workflow</span></span>
+<span id="cb25-67"><a href="#cb25-67" tabindex="-1"></a>AgePopDenom<span class="sc">::</span><span class="fu">run_full_workflow</span>(cntry_code)</span></code></pre></div>
 <p>For more detailed information on advanced usage (e.g., integrating
 additional covariates, applying user-supplied rasters), consult the
-function-specific help files. We hope this package empowers you to
+function-specific help files. We hope this package encourages you to
 reliably estimate age-structured population counts in diverse contexts
 and at finer geographic scales than was previously feasible.</p>
 </div>

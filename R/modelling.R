@@ -83,7 +83,7 @@
 #'
 #' @examples
 #'
-#' \donttest{
+#' \dontrun{
 #' set.seed(123)
 #' # Set parameters for simulation
 #' total_population <- 266
@@ -152,6 +152,25 @@ fit_spatial_model <- function(data,
                               manual_params = NULL,
                               output_dir = NULL,
                               ignore_cache = FALSE) {
+
+  # Check for required packages
+  if (!requireNamespace("sp", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'sp' is required for this function. Please install it ",
+        "with install.packages('sp')"
+      )
+    )
+  }
+  if (!requireNamespace("methods", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'methods' is required for this function. Please install it ",
+        "with install.packages('methods')"
+      )
+    )
+  }
+
   # Check for caching
   if (!is.null(country_code)) {
     country_code <- tolower(country_code)
@@ -224,10 +243,6 @@ fit_spatial_model <- function(data,
       msg_done = "Empirical variogram fitted."
     )
 
-    if (!requireNamespace("automap", quietly = TRUE)) {
-      stop("Package 'automap' is required for variogram fitting.")
-    }
-
     # Create spatial coordinates
     coords <- data |>
       dplyr::select(web_x, web_y) |>
@@ -243,7 +258,7 @@ fit_spatial_model <- function(data,
     sp::coordinates(vgm_data) <- ~ web_x + web_y
 
     # Fit variogram using automap
-    fit_vario <- automap::autofitVariogram(
+    fit_vario <- autofitVariogram(
       stats::formula(paste0(scale_outcome, "~1")),
       vgm_data,
       cutoff = max(dist_matrix) / 2
@@ -384,7 +399,7 @@ fit_spatial_model <- function(data,
     cli::cli_alert_success("Model fitted and saved at {model_param_path}")
   }
 
-  return(opt)
+  opt
 }
 
 #' Compute Covariance Matrix for Spatial Model
@@ -564,7 +579,7 @@ extract_betas <- function(params_result,
 #' @return A data object (`predictor_data`) containing the generated predictors.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' tf <- file.path(tempdir(), "test_env")
 #'
 #' # Initialize with normalized path
@@ -634,6 +649,17 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
                                    output_dir = here::here(
                                      "03_outputs", "3a_model_outputs"
                                    )) {
+
+  # Check for required packages
+  if (!requireNamespace("exactextractr", quietly = TRUE)) {
+    stop(
+      paste0(
+        "Package 'exactextractr' is required for this function. Please ",
+        "install it with install.packages('exactextractr')"
+      )
+    )
+  }
+
   # Check cache and import if it exists ------------------------------------------
 
   # Create lowercase country code
@@ -792,7 +818,7 @@ create_prediction_data <- function(country_code, country_shape, pop_raster,
     "Predictors data created and saved at {predictor_data_path}"
   )
 
-  return(predictor_data)
+  predictor_data
 }
 
 #' Predict Gamma Distribution Parameters for Spatial Grid
@@ -998,7 +1024,7 @@ generate_gamma_predictions <- function(country_code,
     )
   }
 
-  return(gamma_prediction)
+  gamma_prediction
 }
 
 
@@ -1161,7 +1187,7 @@ process_gamma_predictions <- function(gamma_prediction) {
 #'
 #'@examples
 #'
-#' \donttest{
+#' \dontrun{
 #' # set country code
 #' country_codeiso <- "GMB"
 #'

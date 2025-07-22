@@ -148,67 +148,71 @@
 # )
 
 ## ----eval=FALSE, include=TRUE-------------------------------------------------
-# init(
+# # Get Package ------------------------------------------------------------------
+# 
+# # install package
+# install.packages("AgePopDenom")
+# 
+# # Working directory ------------------------------------------------------------
+# 
+# # set working directory based on script location if not using an R project
+# # this ensures relative paths work as expected outside .Rproj environments
+# 
+# # get script path
+# current_file_path <- AgePopDenom::get_current_script_path()
+# script_dir <- dirname(current_file_path)
+# 
+# # set working directory to script directory if not already in a project
+# if (!any(grepl("\\.Rproj$", list.files(script_dir)))) {
+#   setwd(script_dir)
+#   message(
+#     "no .Rproj file found. using script directory as working directory: ",
+#     script_dir
+#   )
+# } else {
+#   message(".Rproj file detected. assuming project is correctly set up.")
+# }
+# 
+# # Create directory and file Structure ------------------------------------------
+# 
+# AgePopDenom::init(
 #   r_script_name = "full_pipeline.R",
 #   cpp_script_name = "model.cpp",
 #   open_r_script = FALSE
 # )
 # 
+# # Gather and process datasets --------------------------------------------------
+# 
 # # set up country code
 # cntry_code = "GMB"
+# country = "Gambia"
+# country_code_dhs = "GM"
 # 
-# # Gather and process datasets ---------------------------------------
-# 
-# # Set parameters for simulation
-# total_population <- 266
-# urban_proportion <- 0.602
-# total_coords <- 266
-# lon_range <- c(-16.802, -13.849)
-# lat_range <- c(13.149, 13.801)
-# mean_web_x <- -1764351
-# mean_web_y <- 1510868
-# 
-# # Simulate processed survey dataset for Gambia
-# set.seed(123)
-# df_gambia <- NULL
-# df_gambia$age_param_data <- dplyr::tibble(
-#   country = "Gambia",
-#   country_code_iso3 = "GMB",
-#   country_code_dhs = "GM",
+# # Simulate and save processed survey dataset for Gambia
+# AgePopDenom::simulate_dummy_dhs_pr(
+#   country = country,
+#   country_code_iso3 = cntry_code,
+#   country_code_dhs = country_code_dhs,
 #   year_of_survey = 2024,
-#   id_coords = rep(1:total_coords, length.out = total_population),
-#   lon = runif(total_population, lon_range[1], lon_range[2]),
-#   lat = runif(total_population, lat_range[1], lat_range[2]),
-#   web_x = rnorm(total_population, mean_web_x, 50000),
-#   web_y = rnorm(total_population, mean_web_y, 50000),
-#   log_scale = rnorm(total_population, 2.82, 0.2),
-#   log_shape = rnorm(total_population, 0.331, 0.1),
-#   urban = rep(c(1,0), c(
-#     round(total_population * urban_proportion),
-#     total_population - round(total_population * urban_proportion))),
-#   b1 = rnorm(total_population, 0.0142, 0.002),
-#   c = rnorm(total_population, -0.00997, 0.001),
-#   b2 = rnorm(total_population, 0.00997, 0.002),
-#   nsampled = sample(180:220, total_population, replace = TRUE))
+#   output_path = here::here(
+#     "01_data",
+#     "1a_survey_data",
+#     "processed",
+#     "dhs_pr_records_combined.rds"
+#   )
+# )
 # 
-# # save as processed dhs data
-# saveRDS(
-#   df_gambia,
-#   file = here::here(
-#     "01_data", "1a_survey_data", "processed",
-#     "dhs_pr_records_combined.rds"))
+# # download shapefiles
+# AgePopDenom::download_shapefile(cntry_code)
 # 
-# # Download shapefiles
-# download_shapefile(cntry_code)
+# # download population rasters from worldpop
+# AgePopDenom::download_pop_rasters(cntry_code)
 # 
-# # Download population rasters from worldpop
-# download_pop_rasters(cntry_code)
+# # wxtract urban extent raster
+# AgePopDenom::extract_afurextent()
 # 
-# # Extract urban extent raster
-# extract_afurextent()
+# # Run models and get outputs ---------------------------------------------------
 # 
-# # Run models and get outputs ------------------------------------------
-# 
-# # Run the full model workflow
-# run_full_workflow(cntry_code)
+# # run the full model workflow
+# AgePopDenom::run_full_workflow(cntry_code)
 
