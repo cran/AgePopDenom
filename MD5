@@ -1,4 +1,4 @@
-2122f3bfa218f0beb7a279e79f1a4c52 *DESCRIPTION
+b2536dda348fc80d847920aeb2bb39e6 *DESCRIPTION
 b79827de06cd2ebd99bb3875e44b0474 *LICENSE
 f07e099e1a62c0072afc5de2623bb070 *NAMESPACE
 cd0d34b42e2454df0284cc53203ad25a *R/afurextent.R
@@ -7,13 +7,13 @@ cd0d34b42e2454df0284cc53203ad25a *R/afurextent.R
 c3a260c19629f2e678d18f57aaf58c71 *R/globals.R
 81e545661189015726bc93620bea3631 *R/modelling.R
 8b61ba7f0b5f7b228ccdfe9872bed7b6 *R/plots.R
-358e943502fca24796fffd001ebd1624 *R/setup.R
+d43b04285dc63356eb11aea382db3a0d *R/setup.R
 8e8de0f032fef259ad90c5df4040937d *R/tables.R
 df3903f7ec6bcb14c58b667ab1b9625c *README.md
 a1026426b366a3d1e80ea7e01f070015 *build/vignette.rds
 201e078f2ddce39d3624ecf4102e6dfe *inst/doc/using_agepopdenom.R
 8192011c969213bdf3424ef72502fbf1 *inst/doc/using_agepopdenom.Rmd
-6dd12bb53a0c137d0c376309191bb00f *inst/doc/using_agepopdenom.html
+1db2604da632444ce33fc2905ccaef01 *inst/doc/using_agepopdenom.html
 63e534cfa3a154a6642a9c4e1fe4891c *inst/extdata/afurextent.asc.zip
 213baa55fc5010406620f901caad9686 *man/aggregate_and_extract_gamma.Rd
 73604fd0efa9964c4e064d84a4ccc7db *man/autofitVariogram.Rd
